@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Quick PMT – Stand-alone Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#EDEFF1;--panel:#fff;--ink:#17232E;--mute:#5E6B77;--line:#D5DAE0;--steel:#23394D;--hi:#F2B705;--ok:#2E7D4F;--bad:#B3361F;--warn:#B77A00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10171E;--panel:#18222C;--ink:#E7ECF0;--mute:#93A1AD;--line:#2B3844;--steel:#0C1218;--ok:#5CBB82;--bad:#EF7A63;--warn:#E8B23A}}
+:root[data-theme="dark"]{--bg:#10171E;--panel:#18222C;--ink:#E7ECF0;--mute:#93A1AD;--line:#2B3844;--steel:#0C1218;--ok:#5CBB82;--bad:#EF7A63;--warn:#E8B23A}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Barlow,system-ui,sans-serif}
+h1,h2,h3{font-family:"Barlow Semi Condensed",Barlow,sans-serif;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.btn{background:var(--steel);color:#fff;border:0;padding:8px 14px;border-radius:4px;font-weight:600}
+.btn.hi{background:var(--hi);color:#17232E}.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{padding:3px 9px;font-size:13px}.btn.red{color:var(--bad);border-color:var(--bad)}
+input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 10px;width:100%}
+label{display:block;font-size:13px;color:var(--mute);margin-bottom:10px}
+.gate{min-height:100vh;display:grid;place-items:center;padding:20px;background:var(--steel)}
+.gatebox{background:var(--panel);width:min(440px,100%);padding:28px;border-top:8px solid var(--hi);border-radius:4px}
+.gatebox h1{font-size:34px;margin-bottom:4px}
+.seg{display:flex;gap:6px;margin:12px 0}.seg .btn{flex:1}
+.proj{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-left:6px solid var(--hi);border-radius:4px;padding:12px 14px;margin-top:10px}
+.proj b{display:block;font-size:17px}.proj span{color:var(--mute);font-size:13px}
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav{background:var(--steel);color:#DCE3E9;padding:16px 10px;position:sticky;top:0;height:100vh;overflow:auto}
+nav h2{color:#fff;font-size:22px;padding:0 8px 2px}nav .pn{font-size:12px;color:#9FB0BF;padding:0 8px 14px}
+nav button{display:block;width:100%;text-align:left;background:none;border:0;color:inherit;padding:9px 10px;border-radius:4px;border-left:4px solid transparent}
+nav button.on{background:rgba(255,255,255,.1);border-left-color:var(--hi);color:#fff;font-weight:600}
+main{padding:22px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}.top h1{font-size:30px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px;min-width:0}
+.stat{font:700 34px "Barlow Semi Condensed";line-height:1}.mute{color:var(--mute);font-size:13px}
+.bar{height:10px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--ok)}
+.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}th{font-size:13px;color:var(--mute);font-weight:600}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600;border:1px solid currentColor}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 140px}
+.note{border-left:5px solid var(--hi);padding:8px 12px;background:var(--panel);margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:center}.note.crit{border-left-color:var(--bad)}
+.photos{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.photos figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.photos img,.photos video{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}.photos figcaption{padding:6px 8px;font-size:12px}
+.pen{background:var(--bg);padding:10px;border-radius:4px;margin-top:8px}
+.empty{padding:28px;text-align:center;color:var(--mute);border:2px dashed var(--line);border-radius:4px}
+dialog{border:0;border-radius:4px;padding:22px;width:min(460px,92vw);background:var(--panel);color:var(--ink)}dialog::backdrop{background:rgba(0,0,0,.5)}
+@media(max-width:760px){.shell{grid-template-columns:1fr}nav{position:static;height:auto;display:flex;overflow-x:auto;padding:8px}nav h2,nav .pn{display:none}nav button{white-space:nowrap;width:auto;border-left:0;border-bottom:3px solid transparent}nav button.on{border-bottom-color:var(--hi)}main{padding:14px}}
+.ro [data-a="add"],.ro [data-a="edit"],.ro [data-a="del"],.ro [data-a="release"],.ro [data-a="seed"],.ro [data-a="attach"],.ro [data-a="addtarget"]{display:none!important}.ro input[data-a="target"],.ro input[data-a="check"]{pointer-events:none}
+</style></head><body>
+<div id="app"><div class="gate"><div class="gatebox"><h1>Quick PMT</h1><p class="mute">Loading…</p></div></div></div>
+<dialog id="dlg"></dialog><input type="file" id="file" hidden>
+<script>
+(function(){
+const SEED={"projects":{"demo":{"name":"Sample School Project (Demo)","loc":"Sample City","start":"2026-09-01","end":"2027-06-30"}},"items":{"i2":{"pid":"demo","name":"Sand filling","unit":"cft","rate":4.4,"target":0,"created":1},"i5":{"pid":"demo","name":"Brickwork","unit":"sft","rate":12.5,"target":0,"created":1},"i3":{"pid":"demo","name":"CC casting (3\")","unit":"sft","rate":8.5,"target":0,"created":1},"i7":{"pid":"demo","name":"Carrying charge (100' more)","unit":"rft","rate":5,"target":0,"created":1},"i1":{"pid":"demo","name":"Earth cutting","unit":"cft","rate":7,"target":0,"created":1},"i6":{"pid":"demo","name":"Fabrication of reinforcement","unit":"kg","rate":24,"target":0,"created":1},"i8":{"pid":"demo","name":"Polythene laying","unit":"sft","rate":0.5,"target":0,"created":1},"i4":{"pid":"demo","name":"RMC RCC casting with pump","unit":"cft","rate":12,"target":0,"created":1}},"subs":{"s3":{"pid":"demo","n":"Demo Waterproofing Contractor","scope":"Waterproofing","created":1},"s2":{"pid":"demo","n":"Demo Sanitary Contractor","scope":"Sanitary","created":1},"s1":{"pid":"demo","n":"Demo Civil Contractor","scope":"Civil","created":1}},"work":{"w04":{"pid":"demo","date":"2026-10-02","sub":"s1","item":"i6","iname":"Fabrication of reinforcement","unit":"kg","L":12,"W":0,"H":0,"dia":16,"nos":40,"ov":0,"rate":24,"qty":757.5832305795315,"amt":18181.997533908754,"rm":"Footing bars, grid A-C","created":103},"w08":{"pid":"demo","date":"2026-10-04","sub":"s2","item":"i7","iname":"Carrying charge (100' more)","unit":"rft","L":250,"W":0,"H":0,"dia":0,"nos":1,"ov":0,"rate":5,"qty":250,"amt":1250,"rm":"Pipe carrying, beyond 100 ft","created":107},"w01":{"pid":"demo","date":"2026-10-01","sub":"s1","item":"i1","iname":"Earth cutting","unit":"cft","L":40,"W":20,"H":5,"dia":0,"nos":1,"ov":0,"rate":7,"qty":4000,"amt":28000,"rm":"Grid A-C, footing excavation","created":100},"w07":{"pid":"demo","date":"2026-10-04","sub":"s1","item":"i5","iname":"Brickwork","unit":"sft","L":60,"W":10,"H":0,"dia":0,"nos":1,"ov":0,"rate":12.5,"qty":600,"amt":7500.0,"rm":"Boundary wall, north side","created":106},"w03":{"pid":"demo","date":"2026-10-02","sub":"s1","item":"i3","iname":"CC casting (3\")","unit":"sft","L":40,"W":20,"H":0,"dia":0,"nos":1,"ov":0,"rate":8.5,"qty":800,"amt":6800.0,"rm":"CC under footings","created":102},"w10":{"pid":"demo","date":"2026-10-05","sub":"s1","item":"i4","iname":"RMC RCC casting with pump","unit":"cft","L":12,"W":8,"H":1,"dia":0,"nos":6,"ov":0,"rate":12,"qty":576,"amt":6912,"rm":"Column bases C1-C6","created":109},"w05":{"pid":"demo","date":"2026-10-03","sub":"s1","item":"i4","iname":"RMC RCC casting with pump","unit":"cft","L":10,"W":10,"H":1.5,"dia":0,"nos":4,"ov":0,"rate":12,"qty":600.0,"amt":7200.0,"rm":"Footing F1-F4 casting","created":104},"w11":{"pid":"demo","date":"2026-10-05","sub":"s3","item":"i8","iname":"Polythene laying","unit":"sft","L":80,"W":25,"H":0,"dia":0,"nos":1,"ov":0,"rate":0.5,"qty":2000,"amt":1000.0,"rm":"Polythene, block C","created":110},"w02":{"pid":"demo","date":"2026-10-01","sub":"s1","item":"i2","iname":"Sand filling","unit":"cft","L":40,"W":20,"H":1,"dia":0,"nos":1,"ov":0,"rate":4.4,"qty":800,"amt":3520.0000000000005,"rm":"Sand bed, grid A-C","created":101},"w12":{"pid":"demo","date":"2026-10-05","sub":"s1","item":"i6","iname":"Fabrication of reinforcement","unit":"kg","L":9,"W":0,"H":0,"dia":12,"nos":60,"ov":0,"rate":24,"qty":479.4081381011098,"amt":11505.795314426636,"rm":"Column bars C1-C6","created":111},"w09":{"pid":"demo","date":"2026-10-04","sub":"s3","item":"i8","iname":"Polythene laying","unit":"sft","L":50,"W":20,"H":0,"dia":0,"nos":1,"ov":0,"rate":0.5,"qty":1000,"amt":500.0,"rm":"Polythene under slab, block B","created":108},"w06":{"pid":"demo","date":"2026-10-03","sub":"s2","item":"i1","iname":"Earth cutting","unit":"cft","L":30,"W":10,"H":4,"dia":0,"nos":1,"ov":0,"rate":7,"qty":1200,"amt":8400,"rm":"Sewer line trench","created":105}},"targets":{"demo_i7_2026-10-04":{"pid":"demo","item":"i7","date":"2026-10-04","target":250},"demo_i4_2026-10-03":{"pid":"demo","item":"i4","date":"2026-10-03","target":600},"demo_i8_2026-10-05":{"pid":"demo","item":"i8","date":"2026-10-05","target":2000},"demo_i5_2026-10-04":{"pid":"demo","item":"i5","date":"2026-10-04","target":700},"demo_i6_2026-10-05":{"pid":"demo","item":"i6","date":"2026-10-05","target":500},"demo_i4_2026-10-05":{"pid":"demo","item":"i4","date":"2026-10-05","target":600}},"reasons":{"r1":{"pid":"demo","name":"Cement bag damaged","type":"Per unit","val":100,"mult":0,"created":1},"r2":{"pid":"demo","name":"Product damaged by contractor","type":"Damage – multiple of cost","val":0,"mult":2,"created":2}},"penalties":{"pn1":{"pid":"demo","sub":"s1","date":"2026-10-03","desc":"Cement bag damaged","type":"Per unit","qty":5,"val":100,"mult":0,"created":1}},"bills":{"b1":{"pid":"demo","sub":"s1","subName":"Demo Civil Contractor","no":"B-001","from":"2026-10-01","to":"2026-10-03","eids":["w01","w02","w03","w04","w05"],"pids":["pn1"],"rows":[{"d":"2026-10-01","n":"Earth cutting","m":"40×20×5 ft","L":40,"W":20,"H":5,"dia":0,"mq":false,"nos":1,"r":7,"rm":"Grid A-C, footing excavation","u":"cft","q":4000,"a":28000},{"d":"2026-10-01","n":"Sand filling","m":"40×20×1 ft","L":40,"W":20,"H":1,"dia":0,"mq":false,"nos":1,"r":4.4,"rm":"Sand bed, grid A-C","u":"cft","q":800,"a":3520},{"d":"2026-10-02","n":"CC casting (3\")","m":"40×20 ft","L":40,"W":20,"H":0,"dia":0,"mq":false,"nos":1,"r":8.5,"rm":"CC under footings","u":"sft","q":800,"a":6800},{"d":"2026-10-02","n":"Fabrication of reinforcement","m":"12 m, dia 16 mm","L":12,"W":0,"H":0,"dia":16,"mq":false,"nos":40,"r":24,"rm":"Footing bars, grid A-C","u":"kg","q":757.58,"a":18182},{"d":"2026-10-03","n":"RMC RCC casting with pump","m":"10×10×1.5 ft","L":10,"W":10,"H":1.5,"dia":0,"mq":false,"nos":4,"r":12,"rm":"Footing F1-F4 casting","u":"cft","q":600.0,"a":7200}],"gross":63702,"lines":[],"pens":[{"d":"2026-10-03","desc":"Cement bag damaged","amt":500}],"pct":0,"late":0,"net":63202,"dates":["2026-10-01","2026-10-02","2026-10-03"],"checked":true,"created":1000}},"notes":{"n1":{"pid":"demo","t":"Client: Level 2 slab pour moved to Oct 12","f":"Client","d":"2026-10-04","lvl":"Critical","created":1}},"stock":{"k1":{"pid":"demo","i":"Cement (50 kg bag)","q":420,"min":500,"u":"bag","sup":"Demo Traders","eta":"2026-10-07","created":1},"k2":{"pid":"demo","i":"Rebar 16 mm","q":12.5,"min":8,"u":"ton","sup":"Demo Steel","eta":"","created":2}}};
+const store={},subs={};
+Object.keys(SEED).forEach(c=>store[c]=new Map(Object.entries(SEED[c])));
+const M=c=>store[c]||(store[c]=new Map());
+const snap=c=>({docs:[...M(c)].map(([id,d])=>({id,data:()=>({...d})}))});
+const emit=c=>setTimeout(()=>(subs[c]||[]).forEach(f=>f(snap(c))),0);
+const db={collection:c=>({
+ onSnapshot(cb){(subs[c]=subs[c]||[]).push(cb);setTimeout(()=>cb(snap(c)),0);return()=>{}},
+ doc:id=>({async set(d){M(c).set(id,{...d});emit(c)},async update(d){M(c).set(id,{...(M(c).get(id)||{}),...d});emit(c)},async delete(){M(c).delete(id);emit(c)}})})};
+const user={async me(){return{id:"reviewer",name:"Reviewer",email:null,canEdit:true}}};
+window.__blobs={};
+const assets={async upload(f){const id=Math.random().toString(36).slice(2);window.__blobs[id]=URL.createObjectURL(f);return{id}}};
+const downloads={async save(r){const b=r.data instanceof Blob?r.data:new Blob([r.data],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=r.filename;document.body.appendChild(a);a.click();a.remove()}};
+window.claude={use:async n=>({db,user,assets,downloads}[n]||null)};
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const PH="";
+async function pbk(msg,salt){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(msg),"PBKDF2",false,["deriveBits"]),b=await crypto.subtle.deriveBits({name:"PBKDF2",salt:new TextEncoder().encode(salt),iterations:120000,hash:"SHA-256"},k,256);return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+let fails=0,lockUntil=0;
+const blobUrl=id=>(window.__blobs&&window.__blobs[id])||"/_blob/"+id;
+const money=n=>"৳"+Math.round(n||0).toLocaleString("en-IN");
+const fmt=n=>(+n||0).toLocaleString("en-IN",{maximumFractionDigits:2});
+const today="2026-10-05";
+const days=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/864e5));
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=s=>document.querySelector(s);
+const KINDS=["projects","items","subs","work","stock","drawings","notes","media","profiles","targets","bills","penalties","reasons"];
+const UNITS=["cft","sft","rft","kg","hour","nos"];
+const SCH={
+ projects:{label:"project",f:[["name","Project name"],["loc","Location"],["start","Start date","date"],["end","Planned finish","date"],["cid","Project ID (needed to open this project)"],["pw","Project password (leave blank to keep the current one)","password"]]},
+ items:{label:"work item",f:[["name","Work item"],["unit","Unit","select",UNITS],["rate","Rate per unit (৳)","number"],["target","Daily target in that unit (optional)","number"]]},
+ subs:{label:"subcontractor",f:[["n","Subcontractor name"],["scope","Scope of work"]]},
+ stock:{label:"stock item",f:[["i","Item"],["q","In stock","number"],["min","Minimum level","number"],["u","Unit"],["sup","Supplier"],["eta","Next delivery","date"]]},
+ drawings:{label:"drawing",f:[["c","Drawing no."],["t","Title"],["r","Revision"],["d","Issue date","date"]]},
+ notes:{label:"announcement",f:[["t","Announcement"],["f","From"],["d","Date","date"],["lvl","Importance","select",["Normal","Critical"]]]},
+ reasons:{label:"penalty reason",f:[["name","Reason (e.g. Cement bag damaged)"],["type","Default penalty type","select",["Fixed amount","Percentage of bill","Per unit","Damage – multiple of cost"]],["val","Default amount or rate (optional)","number"],["mult","Default multiplier (optional)","number"]]},
+ penalties:{label:"penalty",f:[["sub","Subcontractor","sub"],["date","Date","date"],["desc","Reason","reason"],["type","Penalty type","select",["Fixed amount","Percentage of bill","Per unit","Damage – multiple of cost"]],["qty","Quantity (for per unit / damage)","number"],["val","Amount ৳ (or % for percentage; rate or unit cost for per unit / damage)","number"],["mult","Multiplier (damage only, e.g. 2 = pay double)","number"]]},
+ media:{label:"photo",f:[["c","Caption"]]},work:{label:"work entry"}
+};
+const STARTER_ITEMS=[["Earth cutting","cft",7],["Sand filling","cft",4.4],["CC casting (3\")","sft",8.5],["RMC RCC casting with pump","cft",12],["Polythene laying","sft",0.5],["Brickwork","sft",12.5],["Fabrication of reinforcement","kg",24],["Carrying charge (100' more)","rft",5]];
+const STARTER_SUBS=[["Sohel Civil Contractor","Civil"],["Jahid Civil Contractor","Civil"],["Saidur Sanitary Contractor","Sanitary"],["Shahjahan Pile Demolishing Contractor","Pile demolishing"],["Murad Waterproofing Membrane Contractor","Waterproofing membrane"]];
+const C={};KINDS.forEach(k=>C[k]=[]);
+const S={auth:true,bf:today.slice(0,7)+"-01",bt:today,month:today.slice(0,7),metric:"amt",tab:"Overview",rep:"daily",mode:"register",signed:false,pid:null,date:today};
+let db,user,assets,downloads,me,ready=false;
+const mine=k=>C[k].filter(r=>r.pid===S.pid);
+const coll=k=>db.collection(k);
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const gross=s=>mine("work").filter(w=>w.sub===s.id).reduce((a,w)=>a+(w.amt||0),0);
+const billOfW=w=>mine("bills").find(b=>b.eids?b.eids.includes(w.id):(b.sub===w.sub&&w.date>=b.from&&w.date<=b.to));
+const billOfP=q=>mine("bills").find(b=>b.pids?b.pids.includes(q.id):(b.sub===q.sub&&q.date>=b.from&&q.date<=b.to));
+const F={mm:1,cm:10,in:25.4,ft:304.8,m:1000},bsOf=u=>({L:u==="kg"?"m":"ft",W:"ft",H:"ft",dia:"mm"}),r6=x=>Math.round(x*1e6)/1e6;
+const penAmt=(x,g)=>x.type==="Percentage of bill"?g*(x.val||0)/100:x.type==="Per unit"?(x.qty||0)*(x.val||0):x.type==="Damage – multiple of cost"?(x.qty||0)*(x.val||0)*(x.mult||1):(x.val||0);
+function penalty(s){const g=gross(s),late=s.due?(s.done?days(s.due,s.done):days(s.due,today)):0,pct=Math.min(late*(s.rate||0),s.cap||0),lateAmt=g*pct/100,list=C.penalties.filter(x=>x.pid===S.pid&&x.sub===s.id).reduce((a,x)=>a+penAmt(x,g),0);return{g,late,pct,lateAmt,list,amt:lateAmt+list,net:g-lateAmt-list}}
+function calc(unit,v){if(v.ov>0)return v.ov;const n=v.nos||1;
+ if(unit==="cft")return v.L*v.W*v.H*n;if(unit==="sft")return v.L*v.W*n;if(unit==="rft")return v.L*n;
+ if(unit==="kg")return n*v.L*v.dia*v.dia/162.2;if(unit==="hour")return v.L*n;if(unit==="nos")return n;return 0}
+const meas=w=>w.ov>0?"manual qty":w.unit==="cft"?`${w.L}×${w.W}×${w.H} ft`+(w.nos>1?` × ${w.nos}`:""):w.unit==="sft"?`${w.L}×${w.W} ft`+(w.nos>1?` × ${w.nos}`:""):w.unit==="rft"?`${w.L} ft`+(w.nos>1?` × ${w.nos}`:""):w.unit==="hour"?`${w.L} hr`+(w.nos>1?` × ${w.nos}`:""):w.unit==="nos"?`${w.nos||1} nos`:`${w.nos||1} bar × ${w.L} m, ⌀${w.dia} mm`;
+const measD=w=>w.ov>0?"manual qty":w.unit==="cft"?`${w.L}×${w.W}×${w.H} ft`:w.unit==="sft"?`${w.L}×${w.W} ft`:w.unit==="rft"?`${w.L} ft`:w.unit==="hour"?`${w.L} hr`:w.unit==="nos"?"-":`${w.L} m, dia ${w.dia} mm`;
+const profile=()=>C.profiles.find(p=>p.id===me?.id);
+const acts=(k,id)=>`<button class="btn ghost sm" data-a="edit" data-k="${k}" data-id="${id}">Edit</button> <button class="btn ghost sm red" data-a="del" data-k="${k}" data-id="${id}">Delete</button>`;
+const addBtn=(k,t)=>`<button class="btn hi" data-a="add" data-k="${k}">${t||"Add "+SCH[k].label}</button>`;
+const empty=(k,extra)=>`<div class="empty">Nothing here yet.<p>${addBtn(k)} ${extra||""}</p></div>`;
+const seedBtn=k=>`<button class="btn ghost" data-a="seed" data-k="${k}">Load my starter list</button>`;
+
+function render(){
+ const A=$("#app");if(!ready)return;
+ if(!db){A.innerHTML=`<div class="gate"><div class="gatebox"><h1>Quick PMT</h1><p>Saving data needs a signed-in claude.ai account. Open this page while signed in to claude.ai.</p></div></div>`;return}
+ if(!S.auth){A.innerHTML=`<div class="gate"><div class="gatebox"><h1>Quick PMT</h1><p class="mute">Quick Project Management Tool · sign in</p>
+  <label>Login ID<input id="lid" autocomplete="off"></label><label>Password<input id="lpw" type="password"></label><div id="lmsg" class="bad" role="alert" style="margin-bottom:8px"></div><button class="btn hi" data-a="login">Sign in</button></div></div>`;return}
+ if(S.askPid){const ap=C.projects.find(x=>x.id===S.askPid);A.innerHTML=`<div class="gate"><div class="gatebox"><h1>Open project</h1><p><b>${esc(ap?.name)}</b></p>
+  <label>Project ID<input id="pid_in" autocomplete="off"></label><label>Project password<input id="pw_in" type="password"></label><div id="pmsg" class="bad" role="alert" style="margin-bottom:8px"></div>
+  <div class="row"><button class="btn hi" data-a="unlock">Open project</button><button class="btn ghost" data-a="back">Back</button></div></div></div>`;return}
+ if(!S.pid&&C.projects.length===1&&!C.projects[0].ch)S.pid=C.projects[0].id;
+ if(!S.pid||!C.projects.find(p=>p.id===S.pid)){
+  A.innerHTML=`<div class="gate"><div class="gatebox"><h1>Select project</h1><p class="mute">Signed in as ${esc(me?.email||me?.name)}</p>
+  ${C.projects.map(p=>`<button class="proj" data-a="open" data-id="${p.id}"><b>${esc(p.name)}</b><span>${esc(p.loc)} · ${esc(p.start)} to ${esc(p.end)}</span></button>`).join("")||`<div class="empty" style="margin-top:10px">No projects yet.</div>`}
+  <div class="row" style="margin-top:14px">${addBtn("projects")}<button class="btn ghost" data-a="signout">Sign out</button></div></div></div>`;return}
+ const p=C.projects.find(x=>x.id===S.pid);
+ const tabs=["Overview","Daily progress","Work items & rates","Subcontractors & billing","Inventory & supply","Drawings","Announcements","Photos & videos","Reports"];
+ A.innerHTML=`<div class="shell"><nav><h2>Quick PMT · Demo</h2><div class="pn">${esc(p.name)}</div>
+ ${tabs.map(t=>`<button class="${t===S.tab?"on":""}" data-a="tab" data-t="${t}">${t}</button>`).join("")}
+ </nav>
+ <main><div class="top"><h1>${S.tab}</h1><span class="mute">${today}</span></div>${VIEWS[S.tab]()}</main></div>`;
+}
+const targetFor=(it,date)=>{const t=C.targets.find(x=>x.pid===S.pid&&x.item===it.id&&x.date===date);return t?t.target:(it.target||0)};
+function daySummary(date,all){return mine("items").map(it=>{const done=mine("work").filter(w=>w.item===it.id&&w.date===date).reduce((a,w)=>a+(w.qty||0),0),target=targetFor(it,date);return{it,done,target,pct:target>0?Math.min(100,Math.round(done/target*100)):null}}).filter(r=>all||r.target>0||r.done>0)}
+function monthChart(){const[y,m]=S.month.split("-").map(Number),n=new Date(y,m,0).getDate(),amt=[],pct=[];
+ for(let d=1;d<=n;d++){const ds=`${S.month}-${String(d).padStart(2,"0")}`;
+  amt.push(mine("work").filter(w=>w.date===ds).reduce((a,w)=>a+(w.amt||0),0));
+  const t=daySummary(ds).filter(r=>r.pct!==null);pct.push(t.length?Math.round(t.reduce((a,r)=>a+r.pct,0)/t.length):null)}
+ const mx=Math.max(1,...amt),bw=600/n,name=new Date(y,m-1,1).toLocaleString("en",{month:"long",year:"numeric"}),cx=i=>50+i*bw+bw/2,py=v=>180-v/100*160;
+ const bars=amt.map((v,i)=>{const h=v/mx*160,ds=`${S.month}-${String(i+1).padStart(2,"0")}`;return `<rect x="${50+i*bw+1.5}" y="${180-h}" width="${bw-3}" height="${h}" fill="${ds===S.date?"var(--hi)":"var(--ok)"}"><title>${i+1} ${name}: billed ${money(v)}${pct[i]===null?", no target set":", target achieved "+pct[i]+"%"}</title></rect><text x="${cx(i)}" y="196" font-size="9" text-anchor="middle" fill="var(--mute)">${i+1}</text>`}).join("");
+ const pts=pct.map((v,i)=>v===null?null:[cx(i),py(v)]).filter(Boolean);
+ const line=pts.length>1?`<polyline points="${pts.map(q=>q.join(",")).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="2"/>`:"";
+ const dots=pts.map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="3.5" fill="var(--panel)" stroke="var(--ink)" stroke-width="2"/>`).join("");
+ const di=+S.date.slice(8,10),sel=S.date.slice(0,7)===S.month?`${S.date}: billed <b>${money(amt[di-1])}</b>, target achieved <b>${pct[di-1]===null?"no target set":pct[di-1]+"%"}</b>`:"";
+ return `<div class="card" style="margin-top:14px"><div class="top" style="margin-bottom:8px"><h3>${name}</h3><div class="row" style="flex:none"><button class="btn ghost sm" data-a="mprev">Previous month</button><button class="btn ghost sm" data-a="mnext">Next month</button></div></div>
+ <div class="mute" style="margin-bottom:6px"><span style="color:var(--ok)">■</span> Money billed per day (left scale) &nbsp; <span>○—</span> Target achieved % (right scale) &nbsp; <span style="color:var(--hi)">■</span> Selected date</div>
+ <div class="wrap"><svg viewBox="0 0 700 205" style="min-width:600px;width:100%" role="img" aria-label="Daily billing and target achievement for ${name}"><line x1="50" y1="180" x2="650" y2="180" stroke="var(--line)"/><line x1="50" y1="100" x2="650" y2="100" stroke="var(--line)" stroke-dasharray="3 4"/><line x1="50" y1="20" x2="650" y2="20" stroke="var(--line)" stroke-dasharray="3 4"/>
+ <text x="46" y="24" font-size="10" text-anchor="end" fill="var(--mute)">${money(mx)}</text><text x="46" y="180" font-size="10" text-anchor="end" fill="var(--mute)">0</text>
+ <text x="656" y="24" font-size="10" fill="var(--mute)">100%</text><text x="656" y="104" font-size="10" fill="var(--mute)">50%</text><text x="656" y="180" font-size="10" fill="var(--mute)">0%</text>${bars}${line}${dots}</svg></div>
+ <p style="margin:8px 0 0">${sel}</p></div>`}
+const VIEWS={
+Overview(){const p=C.projects.find(x=>x.id===S.pid),W=mine("work"),subs=mine("subs"),om=S.omonth||(S.omonth=today.slice(0,7));
+ const dates=[...new Set([...W.map(w=>w.date),...C.targets.filter(t=>t.pid===S.pid).map(t=>t.date)])].sort();
+ const stats=pred=>{const pc=dates.filter(pred).map(d=>{const t=daySummary(d).filter(r=>r.pct!==null);return t.length?t.reduce((a,r)=>a+r.pct,0)/t.length:null}).filter(v=>v!==null),ww=W.filter(w=>pred(w.date));
+  return{ww,n:ww.length,billed:ww.reduce((a,w)=>a+(w.amt||0),0),days:new Set(ww.map(w=>w.date)).size,pct:pc.length?Math.round(pc.reduce((a,v)=>a+v,0)/pc.length):null}};
+ const all=stats(()=>true),mo=stats(d=>d.startsWith(om)),pt=v=>v===null?"—":v+"%";
+ const pen=subs.reduce((a,x)=>a+penalty(x).amt,0),net=subs.reduce((a,x)=>a+penalty(x).net,0),crit=mine("notes").filter(n=>n.lvl==="Critical");
+ const tot=p.start&&p.end?days(p.start,p.end):0,el=tot?Math.min(tot,days(p.start,today)):0,tp=tot?Math.round(el/tot*100):0;
+ const mname=ym=>new Date(+ym.slice(0,4),+ym.slice(5,7)-1,1).toLocaleString("en",{month:"long",year:"numeric"});
+ let first=(p.start||dates[0]||today).slice(0,7);if(dates[0]&&dates[0].slice(0,7)<first)first=dates[0].slice(0,7);
+ let last=today.slice(0,7);if(dates.length&&dates[dates.length-1].slice(0,7)>last)last=dates[dates.length-1].slice(0,7);
+ const ml=[];for(let[y,m]=[+first.slice(0,4),+first.slice(5,7)];ml.length<120;){const ym=y+"-"+String(m).padStart(2,"0");ml.push(ym);if(ym>=last)break;if(++m>12){m=1;y++}}
+ const by={};mo.ww.forEach(w=>{const k=w.iname+"|"+w.unit,b=by[k]=by[k]||{n:w.iname,u:w.unit,q:0,a:0};b.q+=w.qty||0;b.a+=w.amt||0});
+ return `<div class="note"><div><b>Demo copy with sample data.</b><div class="mute">Everything here is fictional. This is a stand-alone demo: changes you make are not saved, and the data resets when you reload the page.</div></div></div>
+ <div class="card" style="margin-bottom:14px"><h3 style="margin-bottom:8px">Start here</h3><div class="row"><button class="btn" data-a="tab" data-t="Daily progress">Daily progress</button><button class="btn" data-a="tab" data-t="Work items & rates">Work items & rates</button><button class="btn" data-a="tab" data-t="Subcontractors & billing">Billing & bills (PDF)</button><button class="btn" data-a="tab" data-t="Reports">Reports</button></div><p class="mute" style="margin:8px 0 0">Use the menu on the left (top bar on a phone) to move between sections.</p></div>${crit.map(n=>`<div class="note crit"><div><b>${esc(n.t)}</b><div class="mute">${esc(n.f)} · ${esc(n.d)}</div></div></div>`).join("")}
+ <h3 style="margin:6px 0 8px">Whole project · ${esc(p.start)||"—"} to ${esc(p.end)||"—"}</h3>
+ <div class="grid"><div class="card"><div class="mute">Time used</div><div class="stat">${tot?tp+"%":"—"}</div><div class="mute">${tot?el+" of "+tot+" days":"Set start and finish dates"}</div><div class="bar"><i style="width:${tp}%"></i></div></div>
+ <div class="card"><div class="mute">Total billed</div><div class="stat">${money(all.billed)}</div><div class="mute">${all.n} work entries on ${all.days} days</div></div>
+ <div class="card"><div class="mute">Penalties</div><div class="stat">${money(pen)}</div><div class="mute">Payable after penalty ${money(net)}</div></div>
+ <div class="card"><div class="mute">Average target achieved</div><div class="stat">${pt(all.pct)}</div></div></div>
+ <div class="top" style="margin:22px 0 8px"><h3>${mname(om)}</h3><div class="row" style="flex:none"><button class="btn ghost sm" data-a="omprev">Previous month</button><button class="btn ghost sm" data-a="omnext">Next month</button></div></div>
+ <div class="grid"><div class="card"><div class="mute">Billed this month</div><div class="stat">${money(mo.billed)}</div></div>
+ <div class="card"><div class="mute">Target achieved</div><div class="stat">${pt(mo.pct)}</div></div>
+ <div class="card"><div class="mute">Working days / entries</div><div class="stat">${mo.days} / ${mo.n}</div></div></div>
+ ${Object.values(by).length?`<div class="card wrap" style="margin-top:14px"><table style="min-width:420px"><tr><th>Work item</th><th>Quantity</th><th>Amount</th></tr>${Object.values(by).map(b=>`<tr><td>${esc(b.n)}</td><td>${fmt(b.q)} ${b.u}</td><td>${money(b.a)}</td></tr>`).join("")}</table></div>`:`<div class="empty" style="margin-top:14px">No work recorded in ${mname(om)}.</div>`}
+ <h3 style="margin:22px 0 8px">Month by month</h3>
+ <div class="card wrap"><table><tr><th>Month</th><th>Entries</th><th>Billed</th><th>Target achieved</th></tr>${ml.map(ym=>{const x=stats(d=>d.startsWith(ym));return `<tr><td>${mname(ym)}</td><td>${x.n}</td><td>${money(x.billed)}</td><td>${pt(x.pct)}</td></tr>`}).join("")}
+ <tr><td><b>Total</b></td><td><b>${all.n}</b></td><td><b>${money(all.billed)}</b></td><td><b>${pt(all.pct)}</b></td></tr></table></div>
+ <p><button class="btn ghost sm" data-a="edit" data-k="projects" data-id="${p.id}">Edit project</button> <button class="btn ghost sm red" data-a="del" data-k="projects" data-id="${p.id}">Delete project</button></p>`},
+"Daily progress"(){const W=mine("work").filter(w=>w.date===S.date).sort((x,y)=>(x.created||0)-(y.created||0)),sm=daySummary(S.date),tg=sm.filter(r=>r.target>0),hid=mine("items").filter(it=>!tg.some(r=>r.it.id===it.id)),
+ tot=W.reduce((a,w)=>a+(w.amt||0),0),ach=tg.length?Math.round(tg.reduce((a,r)=>a+r.pct,0)/tg.length):null;
+ return `<div class="row" style="margin-bottom:14px;align-items:end"><label style="margin:0;max-width:220px">Date<input type="date" value="${S.date}" data-a="date"></label></div>
+ <h3 style="margin:6px 0 8px">1. Set target</h3>
+ ${tg.length?`<div class="card wrap" style="margin-bottom:10px"><table><tr><th>Work item</th><th>Target for ${S.date}</th></tr>${tg.map(r=>`<tr><td>${esc(r.it.name)}</td><td><input type="number" step="any" value="${r.target||""}" placeholder="0" data-a="target" data-item="${r.it.id}" style="width:100px" aria-label="Target for ${esc(r.it.name)}"> ${r.it.unit}</td></tr>`).join("")}</table></div>`:`<div class="empty" style="margin-bottom:10px">No targets set for this date.</div>`}
+ ${hid.length?`<div class="row" style="margin-bottom:6px;align-items:end"><label style="margin:0">Set a target for an item<select id="tsel">${hid.map(i=>`<option value="${i.id}">${esc(i.name)} (${i.unit})</option>`).join("")}</select></label><label style="margin:0">Target<input type="number" step="any" id="tval" placeholder="0"></label><div><button class="btn ghost" data-a="addtarget">Set target</button></div></div>`:""}
+ <p class="mute">Change a target any time; it applies to this date only. Set it to 0 to remove it.</p>
+ <div class="top" style="margin:22px 0 8px"><h3>2. Work done</h3>${addBtn("work","Add work done")}</div>
+ ${W.length?`<div class="card wrap"><table><tr><th>Subcontractor</th><th>Work item</th><th>Measurement</th><th>Remarks</th><th>Quantity</th><th>Rate</th><th>Amount</th><th></th></tr>${W.map(w=>{const sb=C.subs.find(x=>x.id===w.sub);return `<tr><td>${esc(sb?sb.n:"(removed)")}</td><td>${esc(w.iname)}</td><td>${esc(meas(w))}</td><td style="white-space:normal;min-width:120px">${esc(w.rm)}</td><td>${fmt(w.qty)} ${w.unit}</td><td>${fmt(w.rate)}/${w.unit}</td><td><b>${money(w.amt)}</b></td><td>${billOfW(w)?`<span class="tag ok">Billed ${esc(billOfW(w).no)}</span>`:acts("work",w.id)}</td></tr>`}).join("")}</table></div>`:`<div class="empty">No work recorded for ${S.date}. Use "Add work done".</div>`}
+ <h3 style="margin:22px 0 8px">3. Day total</h3>
+ <div class="grid" style="margin-bottom:10px"><div class="card"><div class="mute">Total work value</div><div class="stat">${money(tot)}</div></div><div class="card"><div class="mute">Work entries</div><div class="stat">${W.length}</div></div>
+ <div class="card"><div class="mute">Target achieved</div><div class="stat">${ach===null?"—":ach+"%"}</div>${ach===null?"":`<div class="bar"><i style="width:${ach}%"></i></div>`}</div></div>
+ ${sm.length?`<div class="card wrap"><table><tr><th>Work item</th><th>Target</th><th>Done</th><th>Completion</th></tr>${sm.map(r=>`<tr><td>${esc(r.it.name)}</td><td>${r.target?fmt(r.target)+" "+r.it.unit:"—"}</td><td>${fmt(r.done)} ${r.it.unit}</td><td style="min-width:130px">${r.pct===null?"—":r.pct+"%"+`<div class="bar"><i style="width:${r.pct}%;background:${r.pct<80?"var(--warn)":"var(--ok)"}"></i></div>`}</td></tr>`).join("")}</table></div>`:""}
+ <p class="mute">Completion is calculated from the work entries. Use Edit on a row in Work done to correct it.</p>`+monthChart()},
+"Work items & rates"(){const I=mine("items");
+ return `<p>${addBtn("items")}</p>`+(I.length?`<div class="card wrap"><table><tr><th>Work item</th><th>Unit</th><th>Rate</th><th>Daily target</th><th></th></tr>${I.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.unit}</td><td>${fmt(x.rate)} tk/${x.unit}</td><td>${x.target?fmt(x.target)+" "+x.unit:"—"}</td><td>${acts("items",x.id)}</td></tr>`).join("")}</table></div><p class="mute">Changing a rate affects new entries only. Old entries keep the rate they were recorded with.</p>`:empty("items",seedBtn("items")))},
+"Subcontractors & billing"(){const s=mine("subs"),f=S.bf,t=S.bt,inR=d=>(!f||d>=f)&&(!t||d<=t);
+ const R=mine("reasons"),rl=`<div class="card" style="margin-bottom:14px"><div class="top" style="margin:0 0 8px"><h3>Penalty reasons</h3>${addBtn("reasons")}</div>${R.length?`<div class="wrap"><table style="min-width:480px"><tr><th>Reason</th><th>Default</th><th></th></tr>${R.map(z=>`<tr><td>${esc(z.name)}</td><td>${z.val>0?esc(z.type)+": "+fmt(z.val)+(z.type==="Damage – multiple of cost"?" × "+fmt(z.mult||1):""):"—"}</td><td>${acts("reasons",z.id)}</td></tr>`).join("")}</table></div>`:`<p class="mute">No reasons yet. Add the reasons you use for penalties; they appear as a list when you add a penalty.</p>`}</div>`;
+ const fb=`<div class="card" style="margin-bottom:14px"><div class="row" style="align-items:end"><label style="margin:0">From date<input type="date" value="${f}" data-a="rfrom"></label><label style="margin:0">To date<input type="date" value="${t}" data-a="rto"></label><div><button class="btn ghost" data-a="rall">Show all dates</button></div></div><p class="mute" style="margin:8px 0 0">Showing work and penalties from ${f||"the beginning"} to ${t||"the latest date"}.</p></div>`;
+ return rl+fb+`<p>${addBtn("subs")}</p>`+(s.length?s.map(x=>{const Wk=mine("work").filter(w=>w.sub===x.id&&inR(w.date)).sort((a,b)=>a.date.localeCompare(b.date)),g=Wk.reduce((a,w)=>a+(w.amt||0),0),by={};
+ Wk.forEach(w=>{const b=by[w.iname+"|"+w.unit]=by[w.iname+"|"+w.unit]||{n:w.iname,u:w.unit,q:0,a:0};b.q+=w.qty;b.a+=w.amt});
+ const P=C.penalties.filter(q=>q.pid===S.pid&&q.sub===x.id&&inR(q.date)).sort((a,b)=>(a.date||"").localeCompare(b.date||"")),pl=P.reduce((a,q)=>a+penAmt(q,g),0),Bl=mine("bills").filter(q=>q.sub===x.id).sort((a,b)=>a.from.localeCompare(b.from));
+ return `<div class="card" style="margin-bottom:14px"><div class="top" style="margin:0 0 8px"><h3>${esc(x.n)} <span class="mute">· ${esc(x.scope)}</span></h3><div>${acts("subs",x.id)}</div></div>
+ ${Object.values(by).length?`<div class="wrap"><table style="min-width:420px"><tr><th>Work item</th><th>Total quantity</th><th>Amount</th></tr>${Object.values(by).map(b=>`<tr><td>${esc(b.n)}</td><td>${fmt(b.q)} ${b.u}</td><td>${money(b.a)}</td></tr>`).join("")}</table></div>`:""}
+ <h3 style="margin:14px 0 6px;font-size:16px">Work entries</h3>
+ ${Wk.length?`<div class="wrap"><table><tr><th>Date</th><th>Work item</th><th>Measurement</th><th>Remarks</th><th>Quantity</th><th>Rate</th><th>Amount</th><th>Bill status</th></tr>${Wk.map(w=>{const b=billOfW(w);return `<tr><td>${esc(w.date)}</td><td>${esc(w.iname)}</td><td>${esc(meas(w))}</td><td style="white-space:normal;min-width:120px">${esc(w.rm)}</td><td>${fmt(w.qty)} ${w.unit}</td><td>${fmt(w.rate)}/${w.unit}</td><td>${money(w.amt)}</td><td>${b?`<span class="tag ok">Bill released · ${esc(b.no)}</span>`:`<span class="tag warn">Not billed</span>`}</td></tr>`}).join("")}</table></div>`:`<p class="mute">No work in these dates.</p>`}
+ <div class="pen"><div class="row"><div>Gross (selected dates)<br><b>${money(g)}</b></div><div>Penalties (selected dates)<br><b class="${pl?"bad":""}">− ${money(pl)}</b></div><div>Net amount<br><b>${money(g-pl)}</b></div></div></div>
+ <h3 style="margin:14px 0 6px;font-size:16px">Penalties</h3>
+ ${P.length?`<div class="wrap"><table style="min-width:560px"><tr><th>Date</th><th>Reason</th><th>Type</th><th>Amount</th><th>Status</th><th></th></tr>${P.map(q=>{const b=billOfP(q);return `<tr><td>${esc(q.date)}</td><td>${esc(q.desc)}</td><td>${esc(q.type)}${q.type==="Per unit"?` (${fmt(q.qty)} × ${fmt(q.val)})`:q.type==="Percentage of bill"?` (${fmt(q.val)}%)`:q.type==="Damage – multiple of cost"?` (${fmt(q.qty)} × ${fmt(q.val)} × ${fmt(q.mult||1)})`:""}</td><td class="bad">− ${money(penAmt(q,g))}</td><td>${b?`<span class="tag ok">Penalty received · ${esc(b.no)}</span>`:`<span class="tag warn">Pending</span>`}</td><td>${b?"":acts("penalties",q.id)}</td></tr>`}).join("")}</table></div>`:`<p class="mute">No penalties in these dates.</p>`}
+ <p style="margin:8px 0"><button class="btn ghost sm" data-a="add" data-k="penalties" data-sub="${x.id}">Add penalty</button></p>
+ <h3 style="margin:14px 0 6px;font-size:16px">Bills</h3>
+ ${Bl.length?`<div class="wrap"><table style="min-width:640px"><tr><th>Bill no.</th><th>Period</th><th>Gross</th><th>Deductions</th><th>Bill amount</th><th>Contractor checked</th><th></th></tr>${Bl.map(q=>`<tr><td>${esc(q.no)} <span class="tag ok">Released</span></td><td>${esc(q.from)} to ${esc(q.to)}</td><td>${money(q.gross)}</td><td class="bad">− ${money(q.gross-q.net)}</td><td><b>${money(q.net)}</b></td><td><label style="margin:0;color:inherit"><input type="checkbox" style="width:auto" data-a="check" data-id="${q.id}" ${q.checked?"checked":""}> Checked</label></td><td>${q.checked?`<button class="btn sm" data-a="pdf" data-id="${q.id}">Download PDF</button> `:""}<button class="btn ghost sm red" data-a="del" data-k="bills" data-id="${q.id}">Delete</button></td></tr>`).join("")}</table></div>`:`<p class="mute">No bills released yet.</p>`}
+ <p style="margin:8px 0 0"><button class="btn hi" data-a="release" data-sub="${x.id}">Release bill</button></p></div>`}).join(""):empty("subs",seedBtn("subs")))},
+"Inventory & supply"(){const s=mine("stock");
+ return `<p>${addBtn("stock")}</p>`+(s.length?`<div class="card wrap"><table><tr><th>Item</th><th>In stock</th><th>Minimum</th><th>Supplier</th><th>Next delivery</th><th>Status</th><th></th></tr>
+ ${s.map(x=>`<tr><td>${esc(x.i)}</td><td>${x.q} ${esc(x.u)}</td><td>${x.min} ${esc(x.u)}</td><td>${esc(x.sup)}</td><td>${esc(x.eta)||"—"}</td><td><span class="tag ${x.q<x.min?"bad":"ok"}">${x.q<x.min?"Reorder":"OK"}</span></td><td>${acts("stock",x.id)}</td></tr>`).join("")}</table></div>`:empty("stock"))},
+Drawings(){const d=mine("drawings");
+ return `<p>${addBtn("drawings")}</p>`+(d.length?`<div class="card wrap"><table><tr><th>No.</th><th>Title</th><th>Revision</th><th>Issued</th><th>File</th><th></th></tr>
+ ${d.map(x=>`<tr><td>${esc(x.c)}</td><td>${esc(x.t)}</td><td><span class="tag ok">${esc(x.r)}</span></td><td>${esc(x.d)}</td><td>${x.aid?`<a href="${blobUrl(x.aid)}" target="_blank" rel="noopener">Open</a> · `:""}<button class="btn ghost sm" data-a="attach" data-k="drawings" data-id="${x.id}">${x.aid?"Replace":"Attach"}</button></td><td>${acts("drawings",x.id)}</td></tr>`).join("")}</table></div>`:empty("drawings"))},
+Announcements(){const n=mine("notes").sort((a,b)=>(b.d||"").localeCompare(a.d||""));
+ return `<p>${addBtn("notes")}</p>`+(n.length?n.map(x=>`<div class="note ${x.lvl==="Critical"?"crit":""}"><div><b>${esc(x.t)}</b><div class="mute">${esc(x.f)} · ${esc(x.d)}</div></div><div>${acts("notes",x.id)}</div></div>`).join(""):empty("notes"))},
+"Photos & videos"(){const m=mine("media").sort((a,b)=>(b.d||"").localeCompare(a.d||""));
+ return `<div class="card" style="margin-bottom:14px">${assets?`<label>Add photos or videos<input type="file" id="up" accept="image/*,video/*" multiple></label>`:`<span class="mute">Uploads are not available for your account.</span>`}</div>
+ ${m.length?`<div class="photos">${m.map(x=>`<figure>${(x.type||"").startsWith("video")?`<video src="${blobUrl(x.aid)}" controls></video>`:`<img src="${blobUrl(x.aid)}" alt="${esc(x.c)}">`}<figcaption>${esc(x.c)}<br><span class="mute">${esc(x.d)}</span><br>${acts("media",x.id)}</figcaption></figure>`).join("")}</div>`:`<div class="empty">No photos or videos yet.</div>`}`},
+Reports(){const R={daily:"Daily progress",ledger:"All work entries",sub:"Subcontractor billing",pen:"Penalty summary",stock:"Inventory"};let rows;
+ const sb=mine("subs"),sn=id=>(C.subs.find(x=>x.id===id)||{}).n||"(removed)";
+ if(S.rep==="daily")rows=[["Work item","Unit","Target","Done","%"],...daySummary(S.date).map(r=>[r.it.name,r.it.unit,r.target||"",fmt(r.done),r.pct===null?"":r.pct+"%"])];
+ if(S.rep==="ledger")rows=[["Date","Subcontractor","Work item","Measurement","Remarks","Quantity","Rate","Amount"],...mine("work").sort((a,b)=>a.date.localeCompare(b.date)).map(w=>[w.date,sn(w.sub),w.iname,meas(w),w.rm||"",fmt(w.qty)+" "+w.unit,w.rate,Math.round(w.amt)])];
+ if(S.rep==="sub")rows=[["Subcontractor","Gross","Penalty","Payable"],...sb.map(s=>{const p=penalty(s);return[s.n,money(p.g),money(p.amt),money(p.net)]})];
+ if(S.rep==="pen")rows=[["Subcontractor","Days late","Penalty %","Penalty"],...sb.map(s=>{const p=penalty(s);return[s.n,p.late,p.pct+"%",money(p.amt)]})];
+ if(S.rep==="stock")rows=[["Item","Stock","Minimum","Shortfall"],...mine("stock").map(s=>[s.i,s.q+" "+s.u,s.min+" "+s.u,Math.max(0,s.min-s.q)+" "+s.u])];
+ window._rows=rows;
+ return `<div class="row" style="margin-bottom:14px;align-items:end">${Object.entries(R).map(([k,v])=>`<button class="btn ${S.rep===k?"hi":"ghost"}" data-a="rep" data-r="${k}">${v}</button>`).join("")}</div>
+ ${S.rep==="daily"?`<label>Date<input type="date" value="${S.date}" data-a="date" style="max-width:200px"></label>`:""}
+ <div class="card wrap"><table><tr>${rows[0].map(c=>`<th>${c}</th>`).join("")}</tr>${rows.slice(1).map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table></div>
+ ${downloads?`<p><button class="btn" data-a="csv">Download as CSV</button></p>`:""}`}
+};
+function reasonToggle(){const sel=$("#dlg").querySelector("[name=desc]"),tx=$("#dtxt");if(!sel||!tx)return;const x=sel.value==="__new"||sel.value==="__other";tx.hidden=!x;tx.placeholder=sel.value==="__new"?"Name of the new reason (it will be saved to your list)":"Write the circumstance";}
+function reasonPrefill(){reasonToggle();const d=$("#dlg"),sel=d.querySelector("[name=desc]");if(!sel)return;const z=mine("reasons").find(r=>r.name===sel.value);
+ if(z&&z.val>0){d.querySelector("[name=type]").value=z.type;d.querySelector("[name=val]").value=z.val;d.querySelector("[name=mult]").value=z.mult||""}}
+function form(k,id){const r=C[k].find(x=>x.id===id)||{};const d=$("#dlg");
+ d.innerHTML=`<h2>${id?"Edit":"Add"} ${SCH[k].label}</h2><div style="margin-top:12px">${SCH[k].f.map(([n,l,t,o])=>{const v=r[n]??((n==="d"||n==="start"||n==="date")?today:t==="sub"?S.defSub:(n==="rate"&&k==="subs")?0.5:(n==="cap")?10:"");
+  return `<label>${l}${t==="reason"?`<select name="${n}">${[...new Set([...mine("reasons").map(z=>z.name),...(v?[v]:[])])].map(z=>`<option ${v===z?"selected":""}>${esc(z)}</option>`).join("")}<option value="__new">＋ Add new reason</option><option value="__other">Other (write the circumstance)</option></select><input id="dtxt" hidden style="margin-top:6px">`:t==="sub"?`<select name="${n}">${mine("subs").map(b=>`<option value="${b.id}" ${v===b.id?"selected":""}>${esc(b.n)}</option>`).join("")}</select>`:t==="select"?`<select name="${n}">${o.map(x=>`<option ${v===x?"selected":""}>${x}</option>`).join("")}</select>`:`<input name="${n}" type="${t||"text"}" step="any" value="${esc(v)}">`}</label>`}).join("")}</div>
+ <div class="row"><button class="btn hi" data-a="save" data-k="${k}" data-id="${id||""}">Save</button><button class="btn ghost" data-a="close">Cancel</button></div>`;d.showModal();if(k==="penalties")reasonPrefill()}
+function entryForm(id){const r=C.work.find(x=>x.id===id)||{},d=$("#dlg"),I=mine("items"),B=mine("subs");
+ if(!I.length||!B.length){d.innerHTML=`<h2>Add work done</h2><p>First add at least one work item and one subcontractor.</p><button class="btn ghost" data-a="close">Close</button>`;d.showModal();return}
+ const n=(nm,l,u,v)=>`<label class="dm" data-u="${u}"><span>${l}</span><input name="${nm}" type="number" step="any" value="${v??""}"></label>`;
+ const it0=I.find(i=>i.id===(r.item||I[0].id))||I[0],LB=it0.unit==="kg"?"m":"ft",LU=["mm","cm","in","ft","m"];
+ const dim=(nm,l,u,v,units,base)=>`<label class="dm" data-u="${u}"><span>${l}</span><span style="display:flex;gap:6px"><input name="${nm}" type="number" step="any" value="${v??""}"><select name="${nm}_u" data-prev="${base}" aria-label="${l} unit" style="width:76px">${units.map(x=>`<option ${x===base?"selected":""}>${x}</option>`).join("")}</select></span></label>`;
+ d.dataset.id=id||"";
+ d.innerHTML=`<h2>${id?"Edit":"Add"} work done</h2><div style="margin-top:12px">
+ <label>Date<input name="date" type="date" value="${r.date||S.date}"></label>
+ <label>Subcontractor<select name="sub">${B.map(b=>`<option value="${b.id}" ${r.sub===b.id?"selected":""}>${esc(b.n)}</option>`).join("")}</select></label>
+ <label>Work item<select name="item">${I.map(i=>`<option value="${i.id}" ${r.item===i.id?"selected":""}>${esc(i.name)} (${i.unit})</option>`).join("")}</select></label>
+ <div class="row">${dim("L","Length","cft sft rft kg hour",r.L,LU,LB)}${dim("W","Width","cft sft",r.W,LU,"ft")}${dim("H","Height","cft",r.H,LU,"ft")}${dim("dia","Bar dia","kg",r.dia,["mm","cm","in"],"mm")}${n("nos","Nos","cft sft rft kg hour nos",r.nos||1)}</div>
+ ${n("ov","Or enter quantity directly (optional)","cft sft rft kg hour nos",r.ov||"")}
+ ${n("rate","Rate (৳ per unit)","cft sft rft kg hour nos",r.rate)}
+ <label>Remarks (location, grid no., purpose of work)<input name="rm" type="text" value="${esc(r.rm||"")}"></label>
+ <div class="pen" id="calc"></div></div>
+ <div class="row" style="margin-top:12px"><button class="btn hi" data-a="savework">Save</button><button class="btn ghost" data-a="close">Cancel</button></div>`;
+ d.showModal();syncEntry(!id)}
+function entryVals(){const d=$("#dlg"),v=n=>parseFloat(d.querySelector(`[name=${n}]`).value)||0,it=C.items.find(i=>i.id===d.querySelector("[name=item]").value),bs=bsOf(it&&it.unit),
+ cv=n=>{const u=d.querySelector(`[name=${n}_u]`);return r6(u?v(n)*F[u.value]/F[bs[n]]:v(n))};
+ const o={L:cv("L"),W:cv("W"),H:cv("H"),dia:cv("dia"),nos:v("nos")||1,ov:v("ov"),rate:v("rate")};o.qty=it?calc(it.unit,o):0;o.amt=o.qty*o.rate;return{o,it}}
+function syncEntry(reset){const d=$("#dlg"),it=C.items.find(i=>i.id===d.querySelector("[name=item]").value);if(!it)return;
+ if(reset){d.querySelector("[name=rate]").value=it.rate;const bs=bsOf(it.unit);["L","W","H","dia"].forEach(n=>{const sel=d.querySelector(`[name=${n}_u]`),inp=d.querySelector(`[name=${n}]`);if(sel.value!==bs[n]){if(inp.value!=="")inp.value=r6(parseFloat(inp.value)*F[sel.value]/F[bs[n]]);sel.value=bs[n]}sel.dataset.prev=bs[n]})}
+ d.querySelectorAll(".dm").forEach(l=>l.hidden=!l.dataset.u.split(" ").includes(it.unit));d.querySelector("[name=L_u]").hidden=it.unit==="hour";
+ d.querySelector("[name=L]").closest("label").firstElementChild.textContent=it.unit==="kg"?"Bar length":it.unit==="hour"?"Hours":"Length";
+ d.querySelector("[name=nos]").closest("label").firstElementChild.textContent=it.unit==="hour"?"Nos (machines / workers)":it.unit==="nos"?"Quantity (Nos)":it.unit==="kg"?"Nos of bars":"Nos (repeats)";
+ const{o}=entryVals(),bu=it.unit==="kg"?"bar length in m, dia in mm":"dimensions in ft";
+ $("#calc").innerHTML=`<div class="mute">${it.unit==="hour"?"Quantity = hours × nos":it.unit==="nos"?"Quantity = Nos":it.unit==="kg"?"Weight = bars × length × dia² ÷ 162.2":it.unit==="cft"?"Volume = L × W × H × nos":it.unit==="sft"?"Area = L × W × nos":"Length = L × nos"}${["cft","sft","rft","kg"].includes(it.unit)?" · calculated with "+bu+". Changing a unit converts the value automatically.":""}</div><div class="row"><div>Quantity<br><b>${fmt(o.qty)} ${it.unit}</b></div><div>Rate<br><b>${fmt(o.rate)}/${it.unit}</b></div><div>Amount<br><b>${money(o.amt)}</b></div></div>`}
+function billCalc(sid,from,to){const sub=C.subs.find(x=>x.id===sid),W=mine("work").filter(w=>w.sub===sid&&w.date>=from&&w.date<=to&&!billOfW(w)),gross=W.reduce((a,w)=>a+(w.amt||0),0),by={};
+ W.forEach(w=>{const b=by[w.iname+"|"+w.unit]=by[w.iname+"|"+w.unit]||{n:w.iname,u:w.unit,q:0,a:0};b.q+=w.qty;b.a+=w.amt});
+ const praw=C.penalties.filter(q=>q.pid===S.pid&&q.sub===sid&&q.date>=from&&q.date<=to&&!billOfP(q)),pens=praw.map(q=>({d:q.date,desc:q.desc,amt:Math.round(penAmt(q,gross))})),pct=penalty(sub).pct,late=Math.round(gross*pct/100),net=Math.round(gross-late-pens.reduce((a,q)=>a+q.amt,0));
+ return{eids:W.map(w=>w.id),pids:praw.map(q=>q.id),rows:W.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(w=>({d:w.date,n:w.iname,m:measD(w),L:w.L||0,W:w.W||0,H:w.H||0,dia:w.dia||0,mq:w.ov>0,nos:w.nos||1,r:w.rate||0,rm:w.rm||"",u:w.unit,q:Math.round((w.qty||0)*100)/100,a:Math.round(w.amt||0)})),gross:Math.round(gross),lines:Object.values(by).map(b=>({n:b.n,u:b.u,q:Math.round(b.q*100)/100,a:Math.round(b.a)})),pens,pct,late,net,dates:[...new Set(W.map(w=>w.date))].sort()}}
+function releaseForm(sid){const sub=C.subs.find(x=>x.id===sid),d=$("#dlg"),ms=today.slice(0,7)+"-01";d.dataset.sub=sid;
+ d.innerHTML=`<h2>Release bill</h2><p class="mute">${esc(sub.n)}</p><div class="row"><label>From date<input type="date" name="rf" value="${ms}"></label><label>To date<input type="date" name="rt" value="${today}"></label></div><div class="pen" id="rcalc"></div>
+ <div class="row" style="margin-top:12px"><button class="btn hi" data-a="savebill">Release bill</button><button class="btn ghost" data-a="close">Cancel</button></div>`;d.showModal();relPreview()}
+function relPreview(){const d=$("#dlg"),f=d.querySelector("[name=rf]").value,t=d.querySelector("[name=rt]").value;if(!f||!t||f>t){$("#rcalc").textContent="Choose a valid date range.";return}
+ const c=billCalc(d.dataset.sub,f,t);$("#rcalc").innerHTML=`<div class="mute">${c.eids.length} unreleased work entries on ${c.dates.length} days. Entries already in a released bill are skipped.</div><div class="row"><div>Gross<br><b>${money(c.gross)}</b></div><div>Penalties<br><b class="bad">− ${money(c.gross-c.net)}</b></div><div>Bill amount<br><b>${money(c.net)}</b></div></div>`}
+function billPdf(bl,company){const{jsPDF}=window.jspdf||{};if(!jsPDF)throw new Error("PDF tool did not load. Check your connection and reload.");
+ const p=C.projects.find(x=>x.id===S.pid),doc=new jsPDF({unit:"mm",format:"a4",orientation:"landscape"}),tk=n=>"Tk "+Math.round(n).toLocaleString("en-IN"),W=297,M=12,AR=216;let y=16;
+ const live=()=>mine("work").filter(w=>w.sub===bl.sub&&w.date>=bl.from&&w.date<=bl.to).sort((a,b)=>a.date.localeCompare(b.date)).map(w=>({d:w.date,n:w.iname,L:w.L||0,W:w.W||0,H:w.H||0,dia:w.dia||0,mq:w.ov>0,nos:w.nos||1,r:w.rate||0,rm:w.rm||"",u:w.unit,q:Math.round((w.qty||0)*100)/100,a:Math.round(w.amt||0)}));
+ const rows=bl.rows&&bl.rows.every(r=>r.r!==undefined&&r.L!==undefined)?bl.rows:live();
+ const dims=r=>r.mq?["-","-","-"]:r.u==="cft"?[r.L+" ft",r.W+" ft",r.H+" ft"]:r.u==="sft"?[r.L+" ft",r.W+" ft","-"]:r.u==="rft"?[r.L+" ft","-","-"]:r.u==="kg"?[r.L+" m","-","-"]:r.u==="hour"?[r.L+" hr","-","-"]:["-","-","-"];
+ const line=(t,x,sz,b)=>{doc.setFont("helvetica",b?"bold":"normal");doc.setFontSize(sz||11);doc.text(String(t),x,y)},R=(t,x)=>doc.text(String(t),x,y,{align:"right"}),chk=()=>{if(y>185){doc.addPage();y=18}};
+ doc.setFont("helvetica","bold");doc.setFontSize(17);doc.text(company,W/2,y,{align:"center"});y+=7;doc.setFontSize(12);doc.text(p.name,W/2,y,{align:"center"});y+=6;
+ doc.setFont("helvetica","normal");doc.setFontSize(11);doc.text("SUBCONTRACTOR BILL",W/2,y,{align:"center"});y+=3;doc.line(M,y,W-M,y);y+=8;
+ line("Bill no.: "+bl.no,M);line("Date: "+today,W-M-40);y+=6;line("Contractor: "+bl.subName,M,11,1);y+=6;line("Bill period: "+bl.from+" to "+bl.to,M);y+=6;
+ line("Work dates covered:",M,10,1);y+=5;doc.setFont("helvetica","normal");doc.setFontSize(9);const dl=doc.splitTextToSize(bl.dates.join(", ")||"-",W-2*M);doc.text(dl,M,y);y+=dl.length*4.2+4;
+ const head=()=>{line("Date",M,8,1);line("Work item",30,8,1);line("Length",68,8,1);line("Width",86,8,1);line("Height",104,8,1);line("Nos/Bars",121,8,1);line("Unit",138,8,1);doc.setFont("helvetica","bold");doc.setFontSize(8);R("Quantity",165);R("Unit rate",189);R("Amount",AR);line("Remarks",220,8,1);y+=2;doc.line(M,y,W-M,y);y+=5};
+ head();
+ rows.forEach(r=>{doc.setFont("helvetica","normal");doc.setFontSize(8.5);const nm=r.n+(r.u==="kg"&&r.dia&&!r.mq?" (dia "+r.dia+" mm)":""),a=doc.splitTextToSize(nm,36),c=doc.splitTextToSize(r.rm||"",W-M-220),h=Math.max(a.length,c.length)*4,dm=dims(r);
+  if(y+h>188){doc.addPage();y=18;head();doc.setFont("helvetica","normal");doc.setFontSize(8.5)}
+  doc.text(r.d,M,y);doc.text(a,30,y);doc.text(dm[0],68,y);doc.text(dm[1],86,y);doc.text(dm[2],104,y);doc.text(String(r.nos),121,y);doc.text(String(r.u).toUpperCase(),138,y);R(r.q,165);R(r.r+"/"+r.u,189);R(tk(r.a),AR);doc.text(c,220,y);y+=h+2});
+ doc.line(M,y,W-M,y);y+=7;chk();line("Gross amount",M,11,1);R(tk(bl.gross),AR);y+=7;
+ if(bl.late>0){chk();line("Late penalty ("+bl.pct+"%)",M,10);R("- "+tk(bl.late),AR);y+=6}
+ bl.pens.forEach(q=>{chk();line("Penalty: "+q.desc+" ("+q.d+")",M,10);R("- "+tk(q.amt),AR);y+=6});
+ y+=2;doc.line(M,y,AR,y);y+=8;chk();line("TOTAL BILL AMOUNT",M,13,1);R(tk(bl.net),AR);y+=24;
+ if(y>170){doc.addPage();y=30}
+ doc.line(M,y,M+60,y);doc.line(W-M-60,y,W-M,y);y+=5;line("Contractor signature",M,9);line("Assistant Engineer",W-M-60,9,1);y+=4.5;line("Juhayer Mahtab",W-M-60,9);y+=4.5;line("PDL-CB",W-M-60,9);
+ return doc.output("blob")}
+async function run(f){try{await f()}catch(e){alert("Could not save: "+(e.message||e.code||e))}}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.tagName==="INPUT")return;const a=b.dataset.a,k=b.dataset.k,id=b.dataset.id;
+ if(a==="login")run(async()=>{const m=$("#lmsg"),id=$("#lid").value.trim(),pw=$("#lpw").value;
+  if(Date.now()<lockUntil){m.textContent="Too many attempts. Wait a little and try again.";return}
+  if(await pbk(id+"\n"+pw,"quickpmt-v2")!==PH){if(++fails>=5){lockUntil=Date.now()+30000;fails=0}m.textContent="Incorrect ID or password.";return}
+  fails=0;S.auth=true;render()});
+ else if(a==="signout"){S.pid=null;S.askPid=null;render()}
+ else if(a==="open"){const op=C.projects.find(x=>x.id===id);if(op&&op.ch){S.askPid=id}else{S.pid=id;S.tab="Overview"}render()}
+ else if(a==="back"){S.askPid=null;render()}
+ else if(a==="unlock")run(async()=>{const ap=C.projects.find(x=>x.id===S.askPid),m=$("#pmsg");if(Date.now()<lockUntil){m.textContent="Too many attempts. Wait a little and try again.";return}
+  const i=$("#pid_in").value.trim();if(i!==ap.cid||await pbk(i+"\n"+$("#pw_in").value,ap.cs)!==ap.ch){if(++fails>=5){lockUntil=Date.now()+30000;fails=0}m.textContent="Incorrect project ID or password.";return}
+  fails=0;S.pid=ap.id;S.askPid=null;S.tab="Overview";render()})
+ else if(a==="switch"){S.pid=null;render()}
+ else if(a==="tab"){S.tab=b.dataset.t;render()}
+ else if(a==="rep"){S.rep=b.dataset.r;render()}
+ else if(a==="add"||a==="edit"){S.defSub=b.dataset.sub||"";k==="work"?entryForm(id):form(k,id)}
+ else if(a==="mprev"||a==="mnext"){const[y,m]=S.month.split("-").map(Number),d=new Date(y,m-1+(a==="mnext"?1:-1),1);S.month=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");render()}
+ else if(a==="metric"){S.metric=b.dataset.m;render()}
+ else if(a==="addtarget"){const v=parseFloat($("#tval").value)||0,item=$("#tsel").value;if(v<=0){alert("Enter a target above zero");return}
+  const key=S.pid+"_"+item+"_"+S.date,o=C.targets.find(x=>x.id===key);if(o)o.target=v;else C.targets.push({id:key,pid:S.pid,item,date:S.date,target:v});render();
+  run(()=>coll("targets").doc(key).set({pid:S.pid,item,date:S.date,target:v}))}
+ else if(a==="omprev"||a==="omnext"){const m=S.omonth||today.slice(0,7),d=new Date(+m.slice(0,4),+m.slice(5,7)-1+(a==="omnext"?1:-1),1);S.omonth=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");render()}
+ else if(a==="omset"){S.omonth=b.dataset.m;render();window.scrollTo(0,0)}
+ else if(a==="release")releaseForm(b.dataset.sub);
+ else if(a==="savebill")run(async()=>{const d=$("#dlg"),f=d.querySelector("[name=rf]").value,t=d.querySelector("[name=rt]").value,sid=d.dataset.sub;
+  if(!f||!t||f>t){alert("Choose a valid date range");return}
+  const c=billCalc(sid,f,t);if(!(c.gross>0)){alert("No unreleased work in this date range.");return}
+  const sub=C.subs.find(x=>x.id===sid),no="B-"+String(mine("bills").length+1).padStart(3,"0");
+  await coll("bills").doc(uid()).set({pid:S.pid,sub:sid,subName:sub.n,no,from:f,to:t,...c,checked:false,created:Date.now()});d.close();render()})
+ else if(a==="pdf"){const d=$("#dlg");d.innerHTML=`<h2>Download bill PDF</h2><label style="margin-top:12px">Company name (printed at the top of the bill)<input id="cname" placeholder="Enter company name" autocomplete="off"></label><div id="cmsg" class="bad" role="alert" style="margin-bottom:8px"></div><div class="row"><button class="btn hi" data-a="pdfgo" data-id="${id}">Download PDF</button><button class="btn ghost" data-a="close">Cancel</button></div>`;d.showModal()}
+ else if(a==="pdfgo")run(async()=>{const nm=$("#cname").value.trim();if(!nm){$("#cmsg").textContent="Enter the company name.";return}const bl=C.bills.find(x=>x.id===id);if(!downloads)throw new Error("Downloads are not available");
+  await downloads.save({filename:`${bl.no}-${bl.subName.replace(/[^A-Za-z0-9]+/g,"-")}.pdf`,data:billPdf(bl,nm)});$("#dlg").close()})
+ else if(a==="rall"){S.bf="";S.bt="";render()}
+ else if(a==="close")$("#dlg").close();
+ else if(a==="seed")run(async()=>{if(k==="items")for(const[n,u,r]of STARTER_ITEMS)await coll("items").doc(uid()).set({pid:S.pid,name:n,unit:u,rate:r,target:0,created:Date.now()});
+  else for(const[n,s]of STARTER_SUBS)await coll("subs").doc(uid()).set({pid:S.pid,n,scope:s,due:"",done:"",rate:0.5,cap:10,created:Date.now()})});
+ else if(a==="savework")run(async()=>{const d=$("#dlg"),{o,it}=entryVals();if(!(o.qty>0)){alert("Enter the measurements first");return}
+  const data={pid:S.pid,rm:d.querySelector("[name=rm]").value.trim(),date:d.querySelector("[name=date]").value,sub:d.querySelector("[name=sub]").value,item:it.id,iname:it.name,unit:it.unit,...o};
+  const eid=d.dataset.id;if(eid)await coll("work").doc(eid).update(data);else{data.created=Date.now();await coll("work").doc(uid()).set(data)}
+  S.date=data.date;d.close();render()});
+ else if(a==="save")run(async()=>{const data={};$("#dlg").querySelectorAll("[name]").forEach(i=>{const t=SCH[k].f.find(f=>f[0]===i.name)[2];data[i.name]=t==="number"?(parseFloat(i.value)||0):i.value.trim()});
+  if(k==="projects"){const pw=data.pw;delete data.pw;const old=C.projects.find(x=>x.id===id);
+   if(!id&&(!data.cid||!pw)){alert("Enter a project ID and password");return}
+   if(pw){data.cs=uid()+uid();data.ch=await pbk(data.cid+"\n"+pw,data.cs)}else if(old&&old.ch&&data.cid!==old.cid){alert("Changing the project ID needs a new password too.");return}}
+  if(k==="penalties"&&(data.desc==="__new"||data.desc==="__other")){const kind=data.desc,tx=$("#dtxt").value.trim();if(!tx){alert("Write the reason");return}data.desc=tx;
+   if(kind==="__new"&&!C.reasons.some(z=>z.pid===S.pid&&z.name===tx))await coll("reasons").doc(uid()).set({pid:S.pid,name:tx,type:data.type,val:data.val,mult:data.mult,created:Date.now()})}
+  if(k!=="projects")data.pid=S.pid;const nid=id||uid();
+  if(id)await coll(k).doc(id).update(data);else{data.created=Date.now();await coll(k).doc(nid).set(data)}
+  $("#dlg").close();if(k==="projects"&&!id){S.pid=nid;S.tab="Overview"}render()});
+ else if(a==="del"){if(!b.dataset.sure){b.dataset.sure=1;b.textContent="Confirm delete";setTimeout(()=>{b.dataset.sure="";b.textContent="Delete"},3500);return}
+  run(async()=>{if(k==="projects"){for(const c of KINDS.filter(x=>!["projects","profiles"].includes(x)))for(const r of C[c].filter(r=>r.pid===id))await coll(c).doc(r.id).delete();S.pid=null}
+   await coll(k).doc(id).delete()})}
+ else if(a==="attach"){window._att={k,id};$("#file").accept=".pdf,image/*,.dwg,.dxf";$("#file").click()}
+ else if(a==="csv")run(async()=>{const csv=window._rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");await downloads.save({filename:"report-"+S.rep+"-"+today+".csv",data:csv})});
+});
+document.addEventListener("change",e=>{const t=e.target;
+ if(t.dataset.a==="date"&&t.value){S.date=t.value;S.month=t.value.slice(0,7);render()}
+ if(t.dataset.a==="check"){const bl=C.bills.find(x=>x.id===t.dataset.id);if(bl)bl.checked=t.checked;render();run(()=>coll("bills").doc(t.dataset.id).update({checked:t.checked}))}
+ if(t.dataset.a==="target"){const key=S.pid+"_"+t.dataset.item+"_"+S.date,v=parseFloat(t.value)||0,o=C.targets.find(x=>x.id===key);
+  if(o)o.target=v;else C.targets.push({id:key,pid:S.pid,item:t.dataset.item,date:S.date,target:v});render();
+  run(()=>coll("targets").doc(key).set({pid:S.pid,item:t.dataset.item,date:S.date,target:v}))}
+ if(/_u$/.test(t.name||"")&&t.closest("#dlg")){const inp=$("#dlg").querySelector(`[name=${t.name.slice(0,-2)}]`);if(inp.value!=="")inp.value=r6(parseFloat(inp.value)*F[t.dataset.prev]/F[t.value]);t.dataset.prev=t.value;syncEntry(false)}
+ if(t.dataset.a==="rfrom"){S.bf=t.value;render()}
+ if(t.dataset.a==="rto"){S.bt=t.value;render()}
+ if(t.name==="item"&&t.closest("#dlg"))syncEntry(true);
+ if(t.name==="desc"&&t.closest("#dlg"))reasonPrefill();
+ if(t.id==="up")run(async()=>{for(const f of t.files){const r=await assets.upload(f);await coll("media").doc(uid()).set({pid:S.pid,c:f.name,d:today,aid:r.id,type:f.type,created:Date.now()})}});
+ if(t.id==="file"&&t.files[0]&&window._att)run(async()=>{const r=await assets.upload(t.files[0]);await coll(window._att.k).doc(window._att.id).update({aid:r.id});t.value=""});
+});
+document.addEventListener("input",e=>{if(e.target.closest("#dlg")){if($("#calc"))syncEntry(false);if($("#rcalc"))relPreview()}});
+(async()=>{
+ try{db=await claude.use("db");user=await claude.use("user");assets=await claude.use("assets");downloads=await claude.use("downloads")}catch(e){}
+ if(db&&user){me=await user.me();
+  KINDS.forEach(k=>coll(k).onSnapshot(s=>{C[k]=s.docs.map(d=>({id:d.id,...d.data()}));
+   if(!$("#dlg").open&&!(document.activeElement&&document.activeElement.matches("input,select")))render()},()=>{}))}
+ if(me&&!me.canEdit)document.body.classList.add("ro");
+ ready=true;render();
+})();
+</script></body></html>
